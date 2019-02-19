@@ -19,6 +19,6 @@ namespace Ron.DistributedCacheDemo
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Ron.DistributedCacheDemo.Startups.SqlServer.Startup>();
+                .UseStartup<Ron.DistributedCacheDemo.Startups.CSRedis.Startup>();
     }
 }

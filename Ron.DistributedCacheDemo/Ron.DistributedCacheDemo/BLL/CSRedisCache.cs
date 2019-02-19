@@ -91,8 +91,8 @@ namespace Ron.DistributedCacheDemo.BLL
             {
                 throw new ArgumentNullException(nameof(key));
             }
+            RedisHelper.Set(key, value, GetExpireSeconds(options));
 
-            RedisHelper.Set(key, value);
         }
 
         public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
@@ -101,8 +101,34 @@ namespace Ron.DistributedCacheDemo.BLL
             {
                 throw new ArgumentNullException(nameof(key));
             }
-
-            await RedisHelper.SetAsync(key, value);
+            if (!token.IsCancellationRequested)
+            {
+                await RedisHelper.SetAsync(key, value, GetExpireSeconds(options));
+            }
         }
+
+        /// <summary>
+        /// 获取过期时间，以活动时间为主
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        int GetExpireSeconds(DistributedCacheEntryOptions options)
+        {
+            int expireSeconds = -1;
+            if (options != null)
+            {
+                if (options.SlidingExpiration.HasValue)
+                {
+                    expireSeconds = Convert.ToInt32(options.SlidingExpiration.Value.TotalSeconds);
+                }
+                else if (options.AbsoluteExpiration.HasValue)
+                {
+                    expireSeconds = Convert.ToInt32((options.AbsoluteExpiration.Value.ToUniversalTime() - DateTime.Now)
+                        .TotalSeconds);
+                }
+            }
+            return expireSeconds;
+        }
+
     }
 }
